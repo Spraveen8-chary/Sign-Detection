@@ -1,0 +1,29 @@
+{
+  "dataset_root": "data_10class",
+  "train_split": 0.85,
+  "split_seed": 42,
+  "classes": [
+    "hello",
+    "sorry",
+    "thank you",
+    "welcome",
+    "nice",
+    "how are you",
+    "help",
+    "fine",
+    "please",
+    "what are you doing"
+  ],
+  "colors": [
+    [41, 171, 202],
+    [240, 172, 95],
+    [131, 193, 103],
+    [255, 99, 71],
+    [186, 85, 211],
+    [255, 215, 0],
+    [70, 130, 180],
+    [46, 204, 113],
+    [231, 76, 60],
+    [26, 188, 156]
+  ]
+}
