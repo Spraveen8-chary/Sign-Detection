@@ -1,0 +1,81 @@
+Metadata-Version: 2.4
+Name: 28-07-2025-sign-language
+Version: 0.1.0
+Summary: A full walkthrough on training a sign language model.
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: albumentations>=2.0.8
+Requires-Dist: colorama>=0.4.6
+Requires-Dist: einops>=0.8.1
+Requires-Dist: jupyter>=1.1.1
+Requires-Dist: label-studio>=1.20.0
+Requires-Dist: mediapipe<0.10.30,>=0.10.21
+Requires-Dist: matplotlib>=3.10.5
+Requires-Dist: rich>=13.0.0
+Requires-Dist: torch>=2.8.0
+Requires-Dist: torchinfo>=1.8.0
+Requires-Dist: torchvision>=0.23.0
+
+# Sign Language Detection with DETR
+
+Train a DETR model for sign-language symbol detection from webcam-captured data.
+
+## Setup
+1. Install UV: `pip install uv`
+2. Clone repo: `git clone https://github.com/nicknochnack/SignDETR .`
+3. Install dependencies: `uv sync`
+
+## Configure Classes
+Edit `src/config.json`:
+- `dataset_root`: dataset folder to read/write (example: `data_10class`)
+- `classes`: ordered class names
+- `colors`: one RGB color per class
+
+`train.py`, `test.py`, and `realtime.py` now infer class count directly from `src/config.json`.
+
+## Fast Data Collection (No Label Studio Required)
+Use automatic palm detection and auto-label writing:
+
+```bash
+uv run src/utils/collect_images.py --images-per-class 150 --camera-id 0
+```
+
+What this does:
+- Detects palm/hand region using MediaPipe.
+- Captures only when hand is detected, stable, and sharp.
+- Writes image + YOLO label automatically.
+- Saves directly into `{dataset_root}/train|test/images|labels` from `src/config.json`.
+
+Controls during capture:
+- `n`: next class
+- `p`: previous class
+- `space`: manual save for current class
+- `q`: quit
+
+If your environment has a stripped MediaPipe build (missing `mp.solutions`), the script automatically falls back to an OpenCV skin-based detector.
+
+## Optional Label Studio
+Label Studio can still be used later, but it is optional in this workflow.
+
+## Training
+1. Create checkpoints folder:
+```bash
+mkdir checkpoints
+```
+2. Train:
+```bash
+uv run src/train.py
+```
+
+## Inference
+1. Test set inference: update checkpoint path in `src/test.py`, then run:
+```bash
+uv run src/test.py
+```
+2. Real-time inference: update checkpoint path in `src/realtime.py`, then run:
+```bash
+uv run src/realtime.py
+```
+
+## Reference
+- [DETR Colab walkthrough](https://colab.research.google.com/github/facebookresearch/detr/blob/colab/notebooks/detr_demo.ipynb)
