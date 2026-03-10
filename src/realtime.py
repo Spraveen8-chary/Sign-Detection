@@ -3,10 +3,11 @@ import torch
 from torch import load
 from model import DETR
 import albumentations as A
+from albumentations.pytorch import ToTensorV2
 from utils.boxes import rescale_bboxes
 from utils.setup import get_classes, get_colors
 from utils.logger import get_logger
-from utils.rich_handlers import DetectionHandler, create_detection_live_display
+from utils.rich_handlers import DetectionHandler
 import sys
 import time 
 
@@ -18,22 +19,36 @@ detection_handler = DetectionHandler()
 logger.print_banner()
 logger.realtime("Initializing real-time sign language detection...")
 
+
+def ensure_opencv_highgui() -> None:
+    build_info = cv2.getBuildInformation()
+    if "GUI:                           NONE" in build_info:
+        raise RuntimeError(
+            "OpenCV has no GUI backend, so no display window can open. "
+            "Install GUI-enabled OpenCV (opencv-python)."
+        )
+
+
 transforms = A.Compose(
         [   
             A.Resize(224,224),
             A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-            A.ToTensorV2()
+            ToTensorV2()
         ]
     )
 
 model = DETR(num_classes=len(get_classes()))
 model.eval()
-model.load_pretrained('pretrained/4426_model.pt')
+model.load_pretrained('checkpoints/99_model.pt')
 CLASSES = get_classes() 
 COLORS = get_colors() 
 
 logger.realtime("Starting camera capture...")
+ensure_opencv_highgui()
 cap = cv2.VideoCapture(0)
+if not cap.isOpened():
+    raise RuntimeError("Could not open camera index 0. Check webcam permissions or try a different camera id.")
+cv2.namedWindow("Frame", cv2.WINDOW_NORMAL)
 
 # Initialize performance tracking
 frame_count = 0
@@ -53,11 +68,16 @@ while cap.isOpened():
 
     probabilities = result['pred_logits'].softmax(-1)[:,:,:-1] 
     max_probs, max_classes = probabilities.max(-1)
-    keep_mask = max_probs > 0.8
+    keep_mask = max_probs > 0.5
 
-    batch_indices, query_indices = torch.where(keep_mask) 
+    if keep_mask.any():
+        batch_indices, query_indices = torch.where(keep_mask)
+    else:
+        query_indices = max_probs.argmax(dim=1)
+        batch_indices = torch.arange(max_probs.size(0), device=max_probs.device)
 
-    bboxes = rescale_bboxes(result['pred_boxes'][batch_indices, query_indices,:], (1920,1080))
+    frame_h, frame_w = frame.shape[:2]
+    bboxes = rescale_bboxes(result['pred_boxes'][batch_indices, query_indices,:], (frame_w, frame_h))
     classes = max_classes[batch_indices, query_indices]
     probas = max_probs[batch_indices, query_indices]
 
@@ -101,4 +121,4 @@ while cap.isOpened():
         break
 
 cap.release() 
-cv2.destroyAllWindows() 
+cv2.destroyAllWindows()
