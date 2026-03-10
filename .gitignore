@@ -11,8 +11,8 @@ wheels/
 detrtest.py
 realtimeimage.py
 data/archive
-
-# data
+pretrained/
+data/
 checkpoints
 # macOS system files
 .DS_Store
