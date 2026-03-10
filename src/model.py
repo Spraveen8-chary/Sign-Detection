@@ -61,8 +61,14 @@ class DETR(nn.Module):
         }
         self.model_handler.log_model_architecture(model_config)
 
-        # create ResNet-50 backbone
-        self.backbone = resnet50(weights=ResNet50_Weights.IMAGENET1K_V1)
+        # create ResNet-50 backbone; fallback to local init if pretrained download is unavailable
+        try:
+            self.backbone = resnet50(weights=ResNet50_Weights.IMAGENET1K_V1)
+        except Exception as exc:
+            self.logger.warning(
+                f"ImageNet pretrained backbone unavailable ({exc}). Falling back to uninitialized ResNet-50."
+            )
+            self.backbone = resnet50(weights=None)
         self.backbone.fc = nn.Identity()
 
         # create conversion layer
