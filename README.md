@@ -10,9 +10,6 @@ pip install uv
 ```bash
 uv sync
 ```
-```bash
-.venv/Scripts/activate
-```
 2. Confirm your classes and split config in `src/config.json`:
 - `dataset_root`
 - `train_split`
@@ -75,4 +72,3 @@ uv run src/utils/collect_images.py --total-images 150 --camera-id 0
 
 ## Reference
 - [DETR Colab walkthrough](https://colab.research.google.com/github/facebookresearch/detr/blob/colab/notebooks/detr_demo.ipynb)
-
