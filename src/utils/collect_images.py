@@ -20,6 +20,18 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG_PATH = PROJECT_ROOT / "src" / "config.json"
 
 
+def ensure_opencv_highgui() -> None:
+    build_info = cv2.getBuildInformation()
+    if "GUI:                           NONE" in build_info:
+        raise RuntimeError(
+            "OpenCV was installed without GUI support (likely opencv-python-headless), "
+            "so cv2.imshow cannot run.\n"
+            "Fix:\n"
+            "  uv pip uninstall opencv-python-headless\n"
+            "  uv pip install opencv-python"
+        )
+
+
 def slugify(value: str) -> str:
     slug = re.sub(r"[^a-zA-Z0-9]+", "_", value.strip().lower())
     slug = slug.strip("_")
@@ -412,6 +424,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main():
+    ensure_opencv_highgui()
     args = parse_args()
     if args.images_per_class <= 0:
         raise ValueError("--images-per-class must be > 0.")

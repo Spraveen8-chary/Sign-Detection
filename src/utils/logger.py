@@ -109,7 +109,7 @@ class SignLanguageLogger:
 
     def success(self, message: str, **kwargs):
         """Log success message with rich formatting."""
-        self.logger.info(f"[success]✅ {message}[/success]", **kwargs)
+        self.logger.info(f"[success]{message}[/success]", **kwargs)
 
     def debug(self, message: str, **kwargs):
         """Log debug message with rich formatting."""
@@ -117,27 +117,27 @@ class SignLanguageLogger:
 
     def data(self, message: str, **kwargs):
         """Log data-related message with rich formatting."""
-        self.logger.info(f"[data]📊 {message}[/data]", **kwargs)
+        self.logger.info(f"[data] {message}[/data]", **kwargs)
 
     def model(self, message: str, **kwargs):
         """Log model-related message with rich formatting."""
-        self.logger.info(f"[model]🤖 {message}[/model]", **kwargs)
+        self.logger.info(f"[model] {message}[/model]", **kwargs)
 
     def training(self, message: str, **kwargs):
         """Log training-related message with rich formatting."""
-        self.logger.info(f"[training]🏋️ {message}[/training]", **kwargs)
+        self.logger.info(f"[training] {message}[/training]", **kwargs)
 
     def test(self, message: str, **kwargs):
         """Log test-related message with rich formatting."""
-        self.logger.info(f"[test]🧪 {message}[/test]", **kwargs)
+        self.logger.info(f"[test] {message}[/test]", **kwargs)
 
     def realtime(self, message: str, **kwargs):
         """Log realtime-related message with rich formatting."""
-        self.logger.info(f"[realtime]📹 {message}[/realtime]", **kwargs)
+        self.logger.info(f"[realtime] {message}[/realtime]", **kwargs)
 
     def detection(self, message: str, **kwargs):
         """Log detection-related message with rich formatting."""
-        self.logger.info(f"[detection]🎯 {message}[/detection]", **kwargs)
+        self.logger.info(f"[detection] {message}[/detection]", **kwargs)
 
     def print_panel(self, title: str, content: str, style: str = "blue"):
         """Print content in a rich panel."""
@@ -159,18 +159,18 @@ class SignLanguageLogger:
     def print_status(self, status: str, message: str, style: str = "blue"):
         """Print a status message with icon."""
         status_icons = {
-            "info": "ℹ️",
-            "success": "✅",
-            "warning": "⚠️",
-            "error": "❌",
-            "loading": "⏳",
-            "done": "🎉",
-            "data": "📊",
-            "model": "🤖",
-            "training": "🏋️",
-            "test": "🧪",
-            "realtime": "📹",
-            "detection": "🎯",
+            "info": "",
+            "success": "",
+            "warning": "",
+            "error": "",
+            "loading": "",
+            "done": "",
+            "data": "",
+            "model": "",
+            "training": "",
+            "test": "",
+            "realtime": "",
+            "detection": "",
         }
 
         icon = status_icons.get(status, "•")
@@ -210,17 +210,17 @@ class SignLanguageLogger:
         ╚═╝  ╚═══╝ ╚═════╝ ╚═════╝ ╚═════╝    ╚═╝
 
 ╔═══════════════════════════════════════════════════════════╗
-║  🤟 Sign Language Detection with DETR                     ║
-║  🎯 Real-time Hand Sign Recognition                       ║
-║  🏋️  DETR (Detection Transformer) Model                    ║
-║  📊 Advanced Computer Vision Pipeline                     ║
+║   Sign Language Detection with DETR                     ║
+║   Real-time Hand Sign Recognition                       ║
+║    DETR (Detection Transformer) Model                    ║
+║   Advanced Computer Vision Pipeline                     ║
 ╚═══════════════════════════════════════════════════════════╝
         """
         self.console.print(Panel(banner, style="bold cyan", border_style="blue", expand=False))
 
     def print_model_summary(self, model_info: Dict[str, Any]):
         """Print model architecture summary."""
-        table = Table(title="🤖 DETR Model Configuration", show_header=True, header_style="bold blue")
+        table = Table(title=" DETR Model Configuration", show_header=True, header_style="bold blue")
         table.add_column("Parameter", style="cyan")
         table.add_column("Value", style="yellow")
 
@@ -231,7 +231,7 @@ class SignLanguageLogger:
 
     def print_dataset_info(self, dataset_info: Dict[str, Any]):
         """Print dataset information."""
-        table = Table(title="📊 Dataset Information", show_header=True, header_style="bold magenta")
+        table = Table(title=" Dataset Information", show_header=True, header_style="bold magenta")
         table.add_column("Metric", style="cyan")
         table.add_column("Value", style="yellow")
 
@@ -246,7 +246,7 @@ class SignLanguageLogger:
             self.console.print("[yellow]No detections found[/yellow]")
             return
 
-        table = Table(title="🎯 Detection Results", show_header=True, header_style="bold green")
+        table = Table(title=" Detection Results", show_header=True, header_style="bold green")
         table.add_column("Class", style="cyan")
         table.add_column("Confidence", style="yellow")
         table.add_column("BBox (x1,y1,x2,y2)", style="orange3")
@@ -275,19 +275,19 @@ class SignLanguageLogger:
 
     def capture(self, message: str, **kwargs):
         """Log capture-related message with rich formatting."""
-        self.logger.info(f"[realtime]📸 {message}[/realtime]", **kwargs)
+        self.logger.info(f"[realtime] {message}[/realtime]", **kwargs)
 
     def capture_success(self, class_name: str, image_count: int, **kwargs):
         """Log successful image capture."""
-        self.console.print(f"[success]✅ Captured {class_name} image #{image_count}[/success]")
+        self.console.print(f"[success] Captured {class_name} image #{image_count}[/success]")
 
     def capture_error(self, class_name: str, error: str, **kwargs):
         """Log capture error with rich formatting."""
-        self.console.print(f"[error]❌ Failed to capture {class_name}: {error}[/error]")
+        self.console.print(f"[error] Failed to capture {class_name}: {error}[/error]")
 
     def capture_class_start(self, class_name: str, total_images: int):
         """Print when starting to capture a new class."""
-        self.console.print(f"\n[bold cyan]🎯 Starting capture for class: {class_name}[/bold cyan]")
+        self.console.print(f"\n[bold cyan] Starting capture for class: {class_name}[/bold cyan]")
         self.console.print(f"[dim]Target: {total_images} images[/dim]")
 
     def capture_session_start(self, classes: list, images_per_class: int, sleep_time: int):
@@ -299,13 +299,13 @@ class SignLanguageLogger:
             ["Sleep Time", f"{sleep_time}s"],
             ["Classes", ", ".join(classes)],
         ]
-        self.print_table("📸 Image Capture Session", ["Parameter", "Value"], session_info)
+        self.print_table(" Image Capture Session", ["Parameter", "Value"], session_info)
 
     def capture_session_complete(self, total_captured: int, total_classes: int):
         """Print capture session completion."""
         self.console.print(f"\n[bold green]🎉 Capture session completed![/bold green]")
-        self.console.print(f"[success]✅ Total images captured: {total_captured}[/success]")
-        self.console.print(f"[success]✅ Classes processed: {total_classes}[/success]")
+        self.console.print(f"[success] Total images captured: {total_captured}[/success]")
+        self.console.print(f"[success] Classes processed: {total_classes}[/success]")
 
     def create_capture_progress(self, total_images: int, class_name: str):
         """Create a progress bar specifically for image capture."""

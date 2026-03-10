@@ -4,15 +4,15 @@
   "split_seed": 42,
   "classes": [
     "hello",
-    "sorry",
-    "thank you",
-    "welcome",
+    "yes",
+    "no",
     "nice",
-    "how are you",
-    "help",
-    "fine",
+    "thank you",
+    "love",
     "please",
-    "what are you doing"
+    "where",
+    "sorry",
+    "help"
   ],
   "colors": [
     [41, 171, 202],

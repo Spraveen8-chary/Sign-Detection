@@ -4,7 +4,7 @@ import torch
 from torch import load
 from torch.utils.data import DataLoader 
 from matplotlib import pyplot as plt 
-from utils.boxes import rescale_bboxes
+from utils.boxes import rescale_bboxes, stacker
 from utils.setup import get_classes, get_dataset_root, get_train_split, get_split_seed
 from utils.logger import get_logger
 from utils.rich_handlers import TestHandler, DetectionHandler
@@ -23,10 +23,10 @@ split_seed = get_split_seed()
 test_dataset = DETRData(dataset_root, train=False, split_ratio=split_ratio, split_seed=split_seed)
 if len(test_dataset) == 0:
     raise RuntimeError("Test split is empty. Lower train_split or collect more data.")
-test_dataloader = DataLoader(test_dataset, shuffle=True, batch_size=4, drop_last=False) 
+test_dataloader = DataLoader(test_dataset, shuffle=True, batch_size=4, drop_last=False, collate_fn=stacker) 
 model = DETR(num_classes=num_classes)
 model.eval()
-model.load_pretrained('pretrained/4426_model.pt')
+model.load_pretrained('checkpoints/99_model.pt')
 
 X, y = next(iter(test_dataloader))
 
@@ -39,8 +39,15 @@ inference_time = (time.time() - start_time) * 1000  # Convert to ms
 
 probabilities = result['pred_logits'].softmax(-1)[:,:,:-1] 
 max_probs, max_classes = probabilities.max(-1)
-keep_mask = max_probs > 0.95
-batch_indices, query_indices = torch.where(keep_mask) 
+CONFIDENCE_THRESHOLD = 0.50
+keep_mask = max_probs > CONFIDENCE_THRESHOLD
+
+# Debug-friendly fallback: if threshold keeps nothing, show best query per image.
+if not keep_mask.any():
+    query_indices = max_probs.argmax(dim=1)
+    batch_indices = torch.arange(X.shape[0], device=query_indices.device)
+else:
+    batch_indices, query_indices = torch.where(keep_mask) 
 
 bboxes = rescale_bboxes(result['pred_boxes'][batch_indices, query_indices,:], (224,224))
 classes = max_classes[batch_indices, query_indices]
@@ -62,18 +69,23 @@ for i in range(len(classes)):
 detection_handler.log_detections(detections) 
 
 CLASSES = get_classes()
+IMAGENET_MEAN = torch.tensor([0.485, 0.456, 0.406]).view(1, 1, 3)
+IMAGENET_STD = torch.tensor([0.229, 0.224, 0.225]).view(1, 1, 3)
 
 fig, ax = plt.subplots(2,2) 
 axs = ax.flatten()
 for idx, (img, ax) in enumerate(zip(X, axs)): 
-    ax.imshow(img.permute(1,2,0))
+    # Undo normalization for display.
+    display_img = img.permute(1, 2, 0).detach().cpu()
+    display_img = (display_img * IMAGENET_STD + IMAGENET_MEAN).clamp(0, 1)
+    ax.imshow(display_img)
     for batch_idx, box_class, box_prob, bbox in zip(batch_indices, classes, probas, bboxes): 
-        if batch_idx == idx: 
+        if batch_idx.item() == idx: 
             xmin, ymin, xmax, ymax = bbox.detach().numpy()
             print(xmin, ymin, xmax, ymax) 
             ax.add_patch(plt.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, fill=False, color=(0.000, 0.447, 0.741), linewidth=3))
-            text = f'{CLASSES[box_class]}: {box_prob:0.2f}'
+            text = f'{CLASSES[box_class.item()]}: {box_prob:0.2f}'
             ax.text(xmin, ymin, text, fontsize=15, bbox=dict(facecolor='yellow', alpha=0.5))
 
 fig.tight_layout() 
-plt.show()     
+plt.show()
