@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Gesture Live Detection</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+  <nav>
+    <h2>AI Gesture Dashboard</h2>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/live">Live Detection</a></li>
+      <li><a href="/features">Features</a></li>
+      <li><a href="/about">About</a></li>
+    </ul>
+  </nav>
+
+  <h1 class="page-title">AI Live Gesture Detection</h1>
+
+  <div class="ai-dashboard">
+    <section class="card camera-card">
+      <h3>Live Camera</h3>
+
+      <div class="camera-container">
+        <img id="liveCamera" class="camera camera-hidden" alt="Live camera stream">
+        <div id="cameraPlaceholder" class="camera-placeholder">
+          Camera is off. Click Start Detection.
+        </div>
+        <div class="scan-line"></div>
+      </div>
+
+      <p id="cameraStatus" class="camera-status">Camera is off.</p>
+      <div class="camera-controls">
+        <button id="detectBtn" class="detect-btn">Start Detection</button>
+        <button id="uploadBtn" class="upload-btn">Upload Image</button>
+        <input type="file" id="fileInput" accept="image/*" style="display: none;">
+      </div>
+    </section>
+
+    <section id="previewCard" class="card camera-card camera-hidden">
+      <h3>Uploaded Image</h3>
+      <div class="camera-container">
+        <img id="uploadPreview" class="camera" alt="Uploaded image preview">
+      </div>
+      <p class="camera-status">Image analyzed.</p>
+    </section>
+
+    <section class="card result-card">
+      <h3>Detected Gesture</h3>
+      <div id="gestureText" class="gesture-box">Waiting for gesture...</div>
+
+      <div class="confidence-section">
+        <p>Confidence</p>
+        <div class="confidence-bar">
+          <div id="confidenceFill"></div>
+        </div>
+        <div id="confidenceText">0%</div>
+      </div>
+    </section>
+
+    <section class="card translate-card">
+      <h3>Translation and Speech</h3>
+      <div id="translation" class="translation-box">Waiting for translation...</div>
+
+      <div class="controls">
+        <select id="language">
+          <option value="en">English</option>
+          <option value="hi">Hindi</option>
+          <option value="te">Telugu</option>
+          <option value="es">Spanish</option>
+        </select>
+        <button id="speakBtn" class="speak-btn">Speak</button>
+      </div>
+
+      <div id="wave" class="wave">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </section>
+  </div>
+
+  <section class="history-card">
+    <h3>Gesture History</h3>
+    <ul id="history"></ul>
+  </section>
+
+  <script src="/static/script.js?v=20260311"></script>
+</body>
+
+</html>
