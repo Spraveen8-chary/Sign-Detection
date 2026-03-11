@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Transcription - SignDetect</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .transcribe-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .mic-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px auto;
+        }
+        .mic-btn.recording {
+            background: #2ed573;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 213, 115, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(46, 213, 115, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 213, 115, 0); }
+        }
+        .transcription-box {
+            background: #f1f2f6;
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 200px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #2f3542;
+            border: 2px solid #dfe4ea;
+        }
+        .status-indicator {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #747d8c;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <h2>🤟 SignDetect</h2>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/live">Live Detection</a></li>
+            <li><a href="/transcribe">Live Transcription</a></li>
+            <li><a href="/features">Features</a></li>
+            <li><a href="/about">About</a></li>
+        </ul>
+    </nav>
+
+    <h1 class="page-title">Live Audio Transcription</h1>
+
+    <div class="transcribe-container">
+        <section class="card">
+            <h3>Audio Input</h3>
+            <p style="text-align: center;">Click the button below and start speaking to transcribe your voice in real-time.</p>
+            <button id="startMicBtn" class="mic-btn">
+                <span id="micIcon">🎤</span>
+                <span id="micText">Start Listening</span>
+            </button>
+            <div id="transcribeStatus" class="status-indicator">Ready to transcribe</div>
+            
+            <div id="wave" class="wave" style="display: none; margin: 20px auto;">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </section>
+
+        <section class="card">
+            <h3>Transcription Result</h3>
+            <div id="transcriptionResult" class="transcription-box">
+                Your transcription will appear here...
+            </div>
+            <button id="clearBtn" class="detect-btn" style="margin-top: 15px;">Clear Text</button>
+        </section>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        const startBtn = document.getElementById('startMicBtn');
+        const micText = document.getElementById('micText');
+        const status = document.getElementById('transcribeStatus');
+        const resultBox = document.getElementById('transcriptionResult');
+        const wave = document.getElementById('wave');
+        const clearBtn = document.getElementById('clearBtn');
+
+        let isRecording = false;
+
+        clearBtn.onclick = () => {
+            resultBox.innerText = "Your transcription will appear here...";
+        };
+
+        startBtn.onclick = async () => {
+            if (!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    
+                    mediaRecorder.ondataavailable = (event) => {
+                        audioChunks.push(event.data);
+                    };
+
+                    mediaRecorder.onstop = async () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                        audioChunks = [];
+                        
+                        status.innerText = "Transcribing...";
+                        
+                        const formData = new FormData();
+                        formData.append('file', audioBlob, 'recording.wav');
+
+                        try {
+                            const response = await fetch('/api/transcribe', {
+                                method: 'POST',
+                                body: formData
+                            });
+                            const data = await response.json();
+                            
+                            if (data.transcription) {
+                                if (resultBox.innerText === "Your transcription will appear here...") {
+                                    resultBox.innerText = data.transcription;
+                                } else {
+                                    resultBox.innerText += " " + data.transcription;
+                                }
+                                status.innerText = "Transcription complete";
+                            } else if (data.error) {
+                                status.innerText = "Error: " + data.error;
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            status.innerText = "Error sending audio to server";
+                        }
+                    };
+
+                    // Record in chunks if we wanted real-time, but for simplicity we'll send on stop
+                    // Let's implement a "stop and send" mechanism first
+                    mediaRecorder.start();
+                    isRecording = true;
+                    startBtn.classList.add('recording');
+                    micText.innerText = "Stop Listening";
+                    status.innerText = "Listening...";
+                    wave.style.display = 'flex';
+
+                } catch (err) {
+                    console.error("Error accessing microphone:", err);
+                    alert("Could not access microphone. Please check permissions.");
+                }
+            } else {
+                mediaRecorder.stop();
+                isRecording = false;
+                startBtn.classList.remove('recording');
+                micText.innerText = "Start Listening";
+                wave.style.display = 'none';
+            }
+        };
+    </script>
+</body>
+</html>
