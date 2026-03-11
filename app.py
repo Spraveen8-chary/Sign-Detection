@@ -12,10 +12,11 @@ import cv2
 import numpy as np
 import torch
 from albumentations.pytorch import ToTensorV2
-from fastapi import FastAPI, HTTPException, Request, File, UploadFile
+from fastapi import FastAPI, HTTPException, Request, File, UploadFile, Form
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+import io
 
 import sys
 
@@ -58,6 +59,8 @@ TRANSLATIONS = {
 }
 
 model: DETR | None = None
+whisper_model = None
+camera: cv2.VideoCapture | None = None
 camera: cv2.VideoCapture | None = None
 camera_index: int | None = None
 classes: list[str] = []
@@ -269,9 +272,41 @@ def features(request: Request):
     return templates.TemplateResponse("features.html", {"request": request})
 
 
+@app.get("/transcribe")
+def transcribe_page(request: Request):
+    return templates.TemplateResponse("transcribe.html", {"request": request})
+
+
+@app.get("/communicate")
+def communicate_page(request: Request):
+    return templates.TemplateResponse("communication.html", {"request": request})
+
 @app.get("/about")
-def about(request: Request):
+def about_page(request: Request):
     return templates.TemplateResponse("about.html", {"request": request})
+
+@app.post("/api/transcribe")
+async def transcribe_audio(file: UploadFile = File(...)):
+    global whisper_model
+    try:
+        from faster_whisper import WhisperModel
+        if whisper_model is None:
+            # Using base model for a good balance of speed and accuracy
+            whisper_model = WhisperModel("base", device="cpu", compute_type="int8")
+        
+        audio_content = await file.read()
+        audio_file = io.BytesIO(audio_content)
+        
+        segments, info = whisper_model.transcribe(audio_file, beam_size=5)
+        
+        full_text = ""
+        for segment in segments:
+            full_text += segment.text + " "
+        
+        return JSONResponse({"transcription": full_text.strip()})
+    except Exception as e:
+        logger.error(f"Transcription error: {e}")
+        return JSONResponse({"error": str(e)}, status_code=500)
 
 
 @app.get("/video")

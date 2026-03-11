@@ -20,6 +20,7 @@ dependencies = [
     "torchinfo>=1.8.0",
     "torchvision>=0.23.0",
     "uvicorn>=0.35.0",
+    "faster-whisper>=1.1.0",
 ]
 
 # pyproject.toml
