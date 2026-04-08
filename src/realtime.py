@@ -39,7 +39,7 @@ transforms = A.Compose(
 
 model = DETR(num_classes=len(get_classes()))
 model.eval()
-model.load_pretrained('checkpoints/99_model.pt')
+model.load_pretrained('checkpoints/20_model.pt')
 CLASSES = get_classes() 
 COLORS = get_colors() 
 
@@ -62,13 +62,16 @@ while cap.isOpened():
         
     # Time the inference
     inference_start = time.time()
-    transformed = transforms(image=frame)
+    # Training uses PIL(RGB). Webcam gives BGR, so convert for consistent model input.
+    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    transformed = transforms(image=rgb_frame)
     result = model(torch.unsqueeze(transformed['image'], dim=0))
     inference_time = (time.time() - inference_start) * 1000  # Convert to ms
 
     probabilities = result['pred_logits'].softmax(-1)[:,:,:-1] 
     max_probs, max_classes = probabilities.max(-1)
-    keep_mask = max_probs > 0.5
+    # Lower threshold to be consistent with app.py (0.20)
+    keep_mask = max_probs > 0.20
 
     if keep_mask.any():
         batch_indices, query_indices = torch.where(keep_mask)

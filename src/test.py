@@ -26,7 +26,7 @@ if len(test_dataset) == 0:
 test_dataloader = DataLoader(test_dataset, shuffle=True, batch_size=4, drop_last=False, collate_fn=stacker) 
 model = DETR(num_classes=num_classes)
 model.eval()
-model.load_pretrained('checkpoints/99_model.pt')
+model.load_pretrained('checkpoints/20_model.pt')
 
 X, y = next(iter(test_dataloader))
 

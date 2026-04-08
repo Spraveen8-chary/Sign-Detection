@@ -37,6 +37,23 @@ uv run src/test.py
 uv run src/realtime.py
 ```
 
+## FastAPI Web App (Templates + Static + Checkpoint)
+Run the web UI with your model checkpoint in `checkpoints/`:
+
+1. Install/update dependencies:
+```bash
+uv sync
+```
+
+2. Start FastAPI:
+```bash
+uv run uvicorn app:app --reload
+```
+
+3. Open in browser:
+- Home: `http://127.0.0.1:8000/`
+- Live detection: `http://127.0.0.1:8000/live`
+
 ## Capture Features
 - Supports one-hand and two-hand signs.
 - Uses full hand landmarks (including fingers), not palm-only, when MediaPipe is available.
